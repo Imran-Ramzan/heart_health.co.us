@@ -1,69 +1,60 @@
-# React + TypeScript + Vite
+# Heart Health Score App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React + TypeScript + Vite application for estimating heart health metrics using a simple scan interface. The app features a modern UI styled with Tailwind CSS and includes three main pages:
 
-Currently, two official plugins are available:
+- **ScanPage**: Guides the user through a scan process.
+- **ResultsPage**: Displays estimated heart health metrics and allows navigation to detailed analysis.
+- **DetailsPage**: Provides a deeper breakdown of pulse rate and related health information.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- **React + TypeScript**: Component-based architecture for maintainability.
+- **Tailwind CSS**: Utility-first styling for rapid UI development.
+- **Vite**: Fast development server and build tool.
+- **SVG Visualizations**: Custom graphics for health metrics.
+- **Responsive Design**: Optimized for mobile and desktop.
+- **ESLint**: Linting with recommended rules for JS, TS, React, and Vite.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## File Structure
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+  App.tsx                # Main app logic, handles page navigation
+  main.tsx               # Entry point, renders App
+  index.css              # Tailwind and custom styles
+  vite-env.d.ts          # Vite TypeScript types
+  components/
+    ScanPage.tsx         # Scan page UI
+    ResultsPage.tsx      # Results summary UI
+    DetailsPage.tsx      # Detailed analysis UI
+public/
+  ...                    # Static assets
+vite.config.ts           # Vite configuration (React, Tailwind plugins)
+eslint.config.js         # ESLint configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Install dependencies and start the dev server:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+## Linting
+
+Lint your code with:
+
+```bash
+npm run lint
+```
+
+## How it Works
+
+This app provides estimated heart health metrics for awareness and general wellness. It is not a substitute for professional medical advice.
+
+## Customization
+
+- **Styling**: Edit `src/index.css` for custom styles.
+- **Metrics**: Update values and logic in `ScanPage.tsx`, `ResultsPage.tsx`, and `DetailsPage.tsx` as needed.

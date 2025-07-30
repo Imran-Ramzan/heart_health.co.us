@@ -1,61 +1,181 @@
+import React, { useRef, useEffect, useState } from "react";
+import * as faceapi from "face-api.js";
+
 type ScanPageProps = {
     onContinue: () => void;
 };
+
+const RECORDINGS_COUNT = 3;
+const MIN_SECONDS = 3;
+const MAX_SECONDS = 15;
+
 export default function ScanPage({ onContinue }: ScanPageProps) {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+    const [recordings, setRecordings] = useState<Blob[]>([]);
+    const [currentRecording, setCurrentRecording] = useState(0);
+    const [countdown, setCountdown] = useState(MAX_SECONDS);
+    const [isRecording, setIsRecording] = useState(false);
+    const [faceDetected, setFaceDetected] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Load face-api models
+    useEffect(() => {
+        const loadModels = async () => {
+            setLoading(true);
+            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+            setLoading(false);
+        };
+        loadModels();
+    }, []);
+
+    // Start camera and attach stream to video
+    useEffect(() => {
+        const getCamera = async () => {
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ video: true });
+                setStream(s);
+            } catch (e) {
+                setError("Could not access camera.");
+            }
+        };
+        getCamera();
+        return () => {
+            stream?.getTracks().forEach(track => track.stop());
+        };
+    }, []);
+
+    // Attach stream to video element after both are ready
+    useEffect(() => {
+        if (videoRef.current && stream) {
+            videoRef.current.srcObject = stream;
+        }
+    }, [stream]);
+
+    // Face detection loop (only when models loaded and video ready)
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (videoRef.current && stream && !loading) {
+            interval = setInterval(async () => {
+                if (videoRef.current && videoRef.current.readyState === 4) {
+                    const result = await faceapi.detectSingleFace(
+                        videoRef.current,
+                        new faceapi.TinyFaceDetectorOptions()
+                    );
+                    setFaceDetected(!!result);
+                }
+            }, 500);
+        }
+        return () => clearInterval(interval);
+    }, [loading, stream]);
+
+    // Countdown logic
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isRecording && faceDetected) {
+            if (countdown > 0) {
+                timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            } else {
+                stopRecording();
+            }
+        }
+        if (isRecording && !faceDetected) {
+            stopRecording();
+        }
+        return () => clearTimeout(timer);
+    }, [isRecording, countdown, faceDetected]);
+
+    const startRecording = () => {
+        if (!stream || !videoRef.current) return;
+        setCountdown(MAX_SECONDS);
+        setIsRecording(true);
+        const recorder = new MediaRecorder(stream);
+        let chunks: BlobPart[] = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            setRecordings(prev => [...prev, new Blob(chunks, { type: "video/webm" })]);
+            setCurrentRecording(prev => prev + 1);
+            setIsRecording(false);
+        };
+        mediaRecorderRef.current = recorder;
+        recorder.start();
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+            mediaRecorderRef.current.stop();
+        }
+        setIsRecording(false);
+    };
+
+    const handleStart = () => {
+        setError(null);
+        startRecording();
+    };
+
+    const handleSkip = () => {
+        setError(null);
+        setCurrentRecording(RECORDINGS_COUNT);
+        onContinue();
+    };
+
+    useEffect(() => {
+        if (currentRecording >= RECORDINGS_COUNT) {
+            onContinue();
+        }
+    }, [currentRecording, onContinue]);
+
     return (
         <div id="scan-page" className="flex flex-col h-full bg-white p-6 md:p-12">
             <div className="text-center pt-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                    Please hold still during this scan.
+                    {isRecording
+                        ? `Recording (${currentRecording + 1}/${RECORDINGS_COUNT})`
+                        : "Please hold still during this scan."}
                 </h1>
+                {isRecording && (
+                    <p className="text-lg text-gray-500 mt-2">
+                        {faceDetected
+                            ? `Time left: ${countdown}s`
+                            : "No face detected, recording stopped."}
+                    </p>
+                )}
             </div>
-
             <div className="flex-grow flex items-center justify-center my-4">
-                <div className="w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden relative md:max-w-sm">
-                    <img
-                        src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg"
+                <div className="w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden relative md:max-w-sm bg-black">
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        muted
+                        playsInline
                         className="w-full h-full object-cover"
-                        alt="Woman's face for scanning"
-                        onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            img.onerror = null;
-                            img.src = "https://placehold.co/600x800/e2e8f0/64748b?text=Camera+Feed";
-                        }}
+                        style={{ background: "#000" }}
                     />
-                    <div className="absolute inset-0">
-                        <svg className="w-full h-full" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">
-                            <path d="M50,150 Q150,100 250,150" stroke="#EF4444" stroke-width="2" fill="none" />
-                            <path d="M60,250 C100,280 200,280 240,250" stroke="#EF4444" stroke-width="2" fill="none" />
-                            <path d="M70,120 L120,220" stroke="#EF4444" stroke-width="2" fill="none" />
-                            <path d="M230,120 L180,220" stroke="#EF4444" stroke-width="2" fill="none" />
-
-                            <path d="M80,130 Q150,180 220,130" stroke="#EF4444" stroke-width="2" fill="none" stroke-dasharray="4 4" />
-
-                            <circle cx="150" cy="140" r="3" fill="#EF4444" />
-                            <circle cx="130" cy="200" r="3" fill="#EF4444" />
-                            <circle cx="170" cy="200" r="3" fill="#EF4444" />
-                            <circle cx="150" cy="240" r="3" fill="#EF4444" />
-
-                            <g transform="translate(135, 260)">
-                                <path d="M15 2.25C11.64 2.25 9 4.89 9 8.25C9 12.12 15 18 15 18C15 18 21 12.12 21 8.25C21 4.89 18.36 2.25 15 2.25Z" fill="#EF4444" />
-                                <text x="15" y="15" font-family="Inter, sans-serif" font-size="8" fill="white" text-anchor="middle" dy=".3em">76</text>
-                            </g>
-                        </svg>
-                    </div>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-1/3 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="bg-green-500 h-full w-3/4 rounded-full"></div>
-                    </div>
+                    {/* Optionally, overlay face box or feedback */}
+                    {!faceDetected && (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">No face detected</span>
+                        </div>
+                    )}
                 </div>
             </div>
-
+            {error && <div className="text-red-500 text-center mb-2">{error}</div>}
             <div className="mt-auto pb-4 md:max-w-sm md:mx-auto md:w-full">
+                {!isRecording && currentRecording < RECORDINGS_COUNT && (
+                    <button
+                        onClick={handleStart}
+                        className="w-full bg-[#40E0D0] text-white font-bold py-4 px-4 rounded-full shadow-lg hover:bg-[#34d3c3] transition-colors duration-300"
+                        disabled={loading || !stream || !faceDetected}
+                    >
+                        {loading || !stream ? "Loading..." : "Start Recording"}
+                    </button>
+                )}
                 <button
-                    onClick={onContinue}
-                    className="w-full bg-[#40E0D0] text-white font-bold py-4 px-4 rounded-full shadow-lg hover:bg-[#34d3c3] transition-colors duration-300"
+                    className="w-full text-gray-500 font-medium py-4 px-4 rounded-full mt-2 hover:bg-gray-100 transition-colors duration-300"
+                    onClick={handleSkip}
                 >
-                    Continue
-                </button>
-                <button className="w-full text-gray-500 font-medium py-4 px-4 rounded-full mt-2 hover:bg-gray-100 transition-colors duration-300">
                     Skip this scan
                 </button>
             </div>
