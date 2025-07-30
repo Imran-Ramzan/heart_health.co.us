@@ -5,55 +5,84 @@ export default function DetailsPage({ onBack }: Props) {
     return (
         <div id="details-page">
             <div className="h-full bg-white p-6 md:p-12 overflow-y-auto">
-                <div className="flex justify-between items-start pt-8 mb-6">
-                    <div>
+                <div className="flex justify-between items-start pt-8 mb-4">
+                    <button onClick={onBack} id="back-to-results-btn" className="text-gray-800 hover:bg-gray-100 p-2 rounded-full"><i className="ph-bold ph-caret-left text-2xl"></i></button>
+                    <div className="text-center">
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Heart Health Score</h1>
-                        <p className="text-green-500 text-sm font-medium">Top 13% of women.</p>
-                        <p className="text-green-600 text-base font-semibold mt-1">Very good</p>
+                        <p className="text-sm text-gray-500">Top 13% of women.</p>
+                        <p className="text-green-500 font-medium">Very good</p>
                     </div>
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
+                    <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center flex-shrink-0">
                         <div className="score-circle w-full h-full rounded-full"></div>
-                        <div className="absolute bg-white w-[85%] h-[85%] rounded-full flex items-center justify-center">
-                            <span className="text-xl md:text-2xl font-bold text-gray-800">9.2</span>
+                        <div className="absolute bg-white w-[85%] h-[85%] rounded-full flex flex-col items-center justify-center">
+                            <span className="text-2xl md:text-3xl font-bold text-gray-800">9.2</span>
+                            <span className="text-xs text-gray-400 -mt-1">out of 10</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="mb-6">
-                    <h2 className="text-lg font-bold text-gray-800 mb-1">👍 Looks Great!</h2>
-                    <p className="text-gray-600 text-sm">The following health scores are looking great! Keep doing what
-                        you're doing.</p>
+                <div className="text-center my-6">
+                    <span className="text-4xl">👍</span>
+                    <h2 className="text-xl font-bold text-gray-800 mt-2">Looks Great!</h2>
+                    <p className="text-gray-600 max-w-xs mx-auto">The following health scores are looking great! Keep doing what you're doing.</p>
                 </div>
-
-                <div className="bg-white rounded-2xl shadow-xl p-6 relative md:p-8 border">
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">Pulse Rate</h3>
-                    <p className="text-sm text-gray-500 mb-4">Top 55% of all women</p>
-
-                    <div className="flex items-center mb-4">
-                        <span className="text-4xl font-bold text-gray-800">50</span>
-                        <span className="ml-2 text-gray-600">beats/min</span>
-                    </div>
-
-                    <div className="relative w-full h-3 bg-gray-200 rounded-full mb-4">
-                        <div className="absolute left-0 top-0 h-3 bg-red-500 rounded-l-full" style={{width: '20%'}}></div>
-                        <div className="absolute left-[20%] top-0 h-3 bg-yellow-400" style={{width: '20%'}}></div>
-                        <div className="absolute left-[40%] top-0 h-3 bg-green-500 rounded-r-full" style={{width: '60%'}}>
+                
+                <div className="bg-white rounded-2xl shadow-xl p-6 relative md:p-8">
+                    <div className="flex flex-col">
+                        <div className="mb-6">
+                            <h3 className="text-xl font-bold text-gray-800">Pulse Rate</h3>
+                            <p className="text-sm text-gray-500">Top 55% of all women</p>
+                            <div className="mt-2">
+                                <p className="text-3xl font-bold text-gray-800">50 <span className="text-base font-normal text-gray-500">beats/min</span></p>
+                                <p className="text-xs text-gray-400">Irregular heartbeats: 0</p>
+                            </div>
                         </div>
-                        <div className="absolute left-[16%] -top-5 w-px h-8 bg-black"></div>
-                    </div>
 
-                    <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• Pulse is the number of times your heart beats in one minute.</li>
-                        <li>• Pulse shows how hard your heart is working to pump blood around your body.</li>
-                        <li>• Low values usually indicate a healthy heart, but too low might signal a problem.</li>
+                        <div className="mb-6" id="pulse-rate-graph" data-value="50" data-min="40" data-max="100">
+                            <div className="relative h-16 mb-4">
+                                <svg className="w-full h-full" viewBox="0 0 300 60" preserveAspectRatio="none">
+                                    <path d="M 30 55 Q 75 15, 150 10 Q 225 15, 270 55 L 270 58 L 30 58 Z" fill="#dcfce7" stroke="none"/>
+                                    <path d="M 30 55 Q 75 15, 150 10 Q 225 15, 270 55" stroke="#22c55e" stroke-width="2" fill="none"/>
+                                </svg>
+                                
+                                <div className="absolute top-3 left-1/2 -translate-x-1/2">
+                                    <span className="text-xs text-green-600 bg-white px-2 py-1 rounded shadow-sm border font-medium">Optimal</span>
+                                </div>
+                            </div>
+                            
+                            <div className="relative mb-3">
+                                <div className="w-full flex h-2.5 rounded-full overflow-hidden">
+                                    <div className="bg-red-400 flex-1"></div>
+                                    <div className="bg-green-500 flex-1"></div>
+                                    <div className="bg-green-300 flex-1"></div>
+                                    <div className="bg-red-300 flex-1"></div>
+                                </div>
+                                <div className="absolute w-3 h-3 bg-white border-2 border-green-600 rounded-full top-1/2 -translate-y-1/2 shadow-sm" 
+                                     style={{left: 'calc(25% - 6px)'}} 
+                                     id="pulse-indicator"></div>
+                            </div>
+                            
+                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                <span>40</span>
+                                <span>60</span>
+                                <span>80</span>
+                                <span>100</span>
+                            </div>
+                            
+                            <div className="flex text-xs text-gray-500">
+                                <span className="flex-1 text-center">Low</span>
+                                <span className="flex-1 text-center font-medium text-green-600">Optimal</span>
+                                <span className="flex-1 text-center">Normal</span>
+                                <span className="flex-1 text-center">Elevated</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <ul className="space-y-3 text-gray-600 text-sm list-disc pl-5 border-t pt-6">
+                        <li>Pulse is the number of times your heart beats in one minute.</li>
+                        <li>Pulse shows how hard your heart is working to pump blood around your body.</li>
+                        <li>Low values are usually good for resting adults, indicating a healthy heart, but too low might signal a problem.</li>
                     </ul>
-                </div>
-
-                <div className="mt-8 md:max-w-sm md:mx-auto">
-                    <button id="back-to-results-btn" onClick={onBack}
-                        className="w-full text-gray-500 font-medium py-3 px-4 rounded-full hover:bg-gray-100 transition-colors duration-300">
-                        Go Back to Results
-                    </button>
                 </div>
             </div>
         </div>
