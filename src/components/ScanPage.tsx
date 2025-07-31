@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as faceapi from "face-api.js";
 
 type ScanPageProps = {
@@ -6,14 +6,12 @@ type ScanPageProps = {
 };
 
 const RECORDINGS_COUNT = 3;
-const MIN_SECONDS = 3;
 const MAX_SECONDS = 15;
 
 export default function ScanPage({ onContinue }: ScanPageProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
-    const [recordings, setRecordings] = useState<Blob[]>([]);
     const [currentRecording, setCurrentRecording] = useState(0);
     const [countdown, setCountdown] = useState(MAX_SECONDS);
     const [isRecording, setIsRecording] = useState(false);
@@ -25,7 +23,10 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     useEffect(() => {
         const loadModels = async () => {
             setLoading(true);
-            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+                faceapi.nets.faceExpressionNet.loadFromUri('/models')
+            ]);
             setLoading(false);
         };
         loadModels();
@@ -56,9 +57,9 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
 
     // Face detection loop (only when models loaded and video ready)
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: number;
         if (videoRef.current && stream && !loading) {
-            interval = setInterval(async () => {
+            interval = window.setInterval(async () => {
                 if (videoRef.current && videoRef.current.readyState === 4) {
                     const result = await faceapi.detectSingleFace(
                         videoRef.current,
@@ -73,10 +74,10 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
 
     // Countdown logic
     useEffect(() => {
-        let timer: NodeJS.Timeout;
+        let timer: number;
         if (isRecording && faceDetected) {
             if (countdown > 0) {
-                timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+                timer = window.setTimeout(() => setCountdown(countdown - 1), 1000);
             } else {
                 stopRecording();
             }
@@ -95,7 +96,6 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         let chunks: BlobPart[] = [];
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
-            setRecordings(prev => [...prev, new Blob(chunks, { type: "video/webm" })]);
             setCurrentRecording(prev => prev + 1);
             setIsRecording(false);
         };
