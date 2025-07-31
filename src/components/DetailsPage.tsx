@@ -56,9 +56,9 @@ function BellCurveChart() {
     };
 
     return (
-        <div className="relative h-16 mb-4">
+        <div className="relative h-16 mb-4 flex justify-end">
             <Line data={data} options={options} height={60} />
-            <div className="absolute left-1/2 -translate-x-1/2" style={{ top: '8px' }}>
+            <div className="absolute right-0" style={{ top: '8px' }}>
                 <span className="text-xs text-green-600 bg-white px-2 py-1 rounded shadow-sm border font-medium">Optimal</span>
             </div>
         </div>
@@ -94,48 +94,52 @@ export default function DetailsPage({ onBack }: Props) {
                 <div className="text-center my-6">
                     <span className="text-4xl">👍</span>
                     <h2 className="text-xl font-bold text-gray-800 mt-2">Looks Great!</h2>
-                    <p className="text-gray-600 max-w-xs mx-auto">The following health scores are looking great! Keep doing what you're doing.</p>
+                    <p className="text-black-600 max-w-xs mx-auto">The following health scores are looking great! Keep doing what you're doing.</p>
                 </div>
                 {/* Pulse Rate Section */}
                 <div className="bg-white rounded-2xl shadow-xl p-6 relative md:p-8">
-                    <div className="flex flex-col">
-                        <div className="mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center mb-6">
+                        <div className="md:w-1/2 w-full">
+                            {/* Pulse Rate Text Section */}
                             <h3 className="text-xl font-bold text-gray-800">Pulse Rate</h3>
-                            <p className="text-sm text-gray-500">Top 55% of all women</p>
+                            <p className="text-sm text-black-500">Top 55% of all women</p>
                             <div className="mt-2">
                                 <p className="text-3xl font-bold text-gray-800">50 <span className="text-base font-normal text-gray-500">beats/min</span></p>
-                                <p className="text-xs text-gray-400">Irregular heartbeats: 0</p>
+                                <p className="text-xs text-black-400">Irregular heartbeats: 0</p>
                             </div>
                         </div>
-                        {/* Bell Curve Graph */}
-                        <div className="mb-6" id="pulse-rate-graph" data-value="50" data-min="40" data-max="100">
+                        <div className="md:w-1/2 w-full mt-4 md:mt-0 flex justify-end">
+                            {/* Bell Curve Chart Section */}
                             <BellCurveChart />
-                            {/* Pulse Bar */}
-                            <div className="relative mb-3">
-                                <div className="w-full flex h-2.5 rounded-full overflow-hidden">
-                                    <div className="bg-red-400 flex-1"></div>
-                                    <div className="bg-green-500 flex-1"></div>
-                                    <div className="bg-green-300 flex-1"></div>
-                                    <div className="bg-yellow-300 flex-1"></div>
-                                </div>
-                                {/* Indicator at 50 (between first and second segment) */}
-                                <div className="absolute w-3 h-3 bg-white border-2 border-green-600 rounded-full top-1/2 -translate-y-1/2 shadow-sm"
-                                    style={{ left: 'calc(25% - 6px)' }}
-                                    id="pulse-indicator"></div>
+                        </div>
+                    </div>
+                    {/* Bell Curve Graph */}
+                    <div className="mb-6" id="pulse-rate-graph" data-value="50" data-min="40" data-max="100">
+                        {/* Pulse Bar */}
+                        <div className="relative mb-3">
+                            <div className="w-full flex h-2.5 rounded-full overflow-hidden">
+                                <div className="bg-red-400 flex-1"></div>
+                                <div className="bg-green-500 flex-1"></div>
+                                <div className="bg-green-300 flex-1"></div>
+                                <div className="bg-yellow-300 flex-1"></div>
                             </div>
-                            {/* Bar Labels */}
-                            <div className="flex justify-between text-xs text-gray-400 mb-1">
-                                <span>40</span>
-                                <span>60</span>
-                                <span>80</span>
-                                <span>100</span>
-                            </div>
-                            <div className="flex text-xs text-gray-500">
-                                <span className="flex-1 text-center">Low</span>
-                                <span className="flex-1 text-center font-medium text-green-600">Optimal</span>
-                                <span className="flex-1 text-center">Normal</span>
-                                <span className="flex-1 text-center">Elevated</span>
-                            </div>
+                            {/* Indicator at 50 (between first and second segment) */}
+                            <div className="absolute w-3 h-3 bg-white border-2 border-green-600 rounded-full top-1/2 -translate-y-1/2 shadow-sm"
+                                style={{ left: 'calc(25% - 6px)' }}
+                                id="pulse-indicator"></div>
+                        </div>
+                        {/* Bar Labels */}
+                        <div className="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>40</span>
+                            <span>60</span>
+                            <span>80</span>
+                            <span>100</span>
+                        </div>
+                        <div className="flex text-xs text-gray-500">
+                            <span className="flex-1 text-center">Low</span>
+                            <span className="flex-1 text-center font-medium text-green-600">Optimal</span>
+                            <span className="flex-1 text-center">Normal</span>
+                            <span className="flex-1 text-center">Elevated</span>
                         </div>
                     </div>
                     {/* Pulse Description */}
