@@ -38,77 +38,80 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                 </div>
                 <p className="text-sm text-gray-500 -mt-3 mb-6">Top 5% of women</p>
 
-                <div className="space-y-5 md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-8 md:space-y-0">
-                    {/* Blood Pressure */}
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-gray-500 text-sm">Blood Pressure</p>
-                            <div className="flex items-center space-x-1">
-                                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-                                <p className="text-sm font-medium text-gray-700">High Normal</p>
+                {/* Metrics section: two columns, right column for units/icons */}
+                <div className="flex">
+                    {/* Left column: metrics */}
+                    <div className="flex-1 space-y-5">
+                        {/* Blood Pressure */}
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-gray-500 text-sm">Blood Pressure</p>
+                                <div className="flex items-center space-x-1">
+                                    <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                    <p className="text-sm font-medium text-gray-700">High Normal</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xl md:text-2xl font-bold text-gray-800">130/92</p>
                             </div>
                         </div>
-                        <div className="text-right flex flex-col items-end">
-                            <p className="text-xl md:text-2xl font-bold text-gray-800">130/92</p>
-                            <div className="flex items-center space-x-1">
-                                <span className="text-gray-400 text-xs">mmHg</span>
-                                {/* Blood Pressure Icon */}
-                                <i className="ph ph-activity text-gray-400 text-base"></i>
+                        {/* Pulse */}
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-gray-500 text-sm">Pulse</p>
+                                <div className="flex items-center space-x-1">
+                                    <i className="ph-fill ph-check-circle text-green-500"></i>
+                                    <p className="text-sm font-medium text-gray-700">Optimal</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xl md:text-2xl font-bold text-gray-800">42</p>
+                            </div>
+                        </div>
+                        {/* Irregular Heartbeats */}
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-gray-500 text-sm">Irregular Heartbeats</p>
+                                <div className="flex items-center space-x-1">
+                                    <i className="ph-fill ph-check-circle text-green-500"></i>
+                                    <p className="text-sm font-medium text-gray-700">Good</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xl md:text-2xl font-bold text-gray-800">0</p>
+                            </div>
+                        </div>
+                        {/* Breathing Rate */}
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-gray-500 text-sm">Breathing Rate</p>
+                                <div className="flex items-center space-x-1">
+                                    <i className="ph-fill ph-check-circle text-green-500"></i>
+                                    <p className="text-sm font-medium text-gray-700">Good</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xl md:text-2xl font-bold text-gray-800">23</p>
                             </div>
                         </div>
                     </div>
-                    {/* Pulse */}
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-gray-500 text-sm">Pulse</p>
-                            <div className="flex items-center space-x-1">
-                                <i className="ph-fill ph-check-circle text-green-500"></i>
-                                <p className="text-sm font-medium text-gray-700">Optimal</p>
-                            </div>
+                    {/* Right column: units and icons, vertically stacked */}
+                    <div className="flex flex-col items-center justify-between ml-6 py-1">
+                        <div className="flex flex-col items-center mb-2">
+                            <span className="text-gray-400 text-xs">mmHg</span>
+                            <i className="ph ph-activity text-gray-400 text-xl"></i>
                         </div>
-                        <div className="text-right flex flex-col items-end">
-                            <p className="text-xl md:text-2xl font-bold text-gray-800">42</p>
-                            <div className="flex items-center space-x-1">
-                                <span className="text-gray-400 text-xs">bpm</span>
-                                {/* Heart Icon */}
-                                <i className="ph ph-heart text-gray-400 text-base"></i>
-                            </div>
+                        <div className="flex flex-col items-center mb-2">
+                            <span className="text-gray-400 text-xs">bpm</span>
+                            <i className="ph ph-heart text-gray-400 text-xl"></i>
                         </div>
-                    </div>
-                    {/* Irregular Heartbeats */}
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-gray-500 text-sm">Irregular Heartbeats</p>
-                            <div className="flex items-center space-x-1">
-                                <i className="ph-fill ph-check-circle text-green-500"></i>
-                                <p className="text-sm font-medium text-gray-700">Good</p>
-                            </div>
+                        <div className="flex flex-col items-center mb-2">
+                            <span className="text-gray-400 text-xs">beats</span>
+                            <i className="ph ph-waveform text-gray-400 text-xl"></i>
                         </div>
-                        <div className="text-right flex flex-col items-end">
-                            <p className="text-xl md:text-2xl font-bold text-gray-800">0</p>
-                            <div className="flex items-center space-x-1">
-                                <span className="text-gray-400 text-xs">beats</span>
-                                {/* Beats Icon */}
-                                <i className="ph ph-waveform text-gray-400 text-base"></i>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Breathing Rate */}
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-gray-500 text-sm">Breathing Rate</p>
-                            <div className="flex items-center space-x-1">
-                                <i className="ph-fill ph-check-circle text-green-500"></i>
-                                <p className="text-sm font-medium text-gray-700">Good</p>
-                            </div>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                            <p className="text-xl md:text-2xl font-bold text-gray-800">23</p>
-                            <div className="flex items-center space-x-1">
-                                <span className="text-gray-400 text-xs">brpm</span>
-                                {/* Breathing Icon */}
-                                <i className="ph ph-wind text-gray-400 text-base"></i>
-                            </div>
+                        <div className="flex flex-col items-center">
+                            <span className="text-gray-400 text-xs">brpm</span>
+                            <i className="ph ph-wind text-gray-400 text-xl"></i>
                         </div>
                     </div>
                 </div>
