@@ -23,6 +23,15 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                     </div>
                 </div>
             </div>
+            {/* Progress bar with 5 segments */}
+            <div className="flex justify-between items-center mb-6 px-2 md:px-8">
+                {[...Array(5)].map((_, i) => (
+                    <div
+                        key={i}
+                        className={`h-2 rounded-full flex-1 mx-1 ${i < 4 ? 'bg-green-300' : 'bg-gray-200'}`}
+                    ></div>
+                ))}
+            </div>
             <div className="bg-white rounded-2xl shadow-xl p-6 relative md:p-8">
                 <div className="flex items-center mb-4">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-800">Heart Health</h2>
@@ -30,6 +39,7 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                 <p className="text-sm text-gray-500 -mt-3 mb-6">Top 5% of women</p>
 
                 <div className="space-y-5 md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-8 md:space-y-0">
+                    {/* Blood Pressure */}
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-gray-500 text-sm">Blood Pressure</p>
@@ -38,12 +48,16 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                                 <p className="text-sm font-medium text-gray-700">High Normal</p>
                             </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end">
                             <p className="text-xl md:text-2xl font-bold text-gray-800">130/92</p>
-                            <p className="text-xs text-gray-400">mmHg</p>
+                            <div className="flex items-center space-x-1">
+                                <span className="text-gray-400 text-xs">mmHg</span>
+                                {/* Blood Pressure Icon */}
+                                <i className="ph ph-activity text-gray-400 text-base"></i>
+                            </div>
                         </div>
                     </div>
-
+                    {/* Pulse */}
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-gray-500 text-sm">Pulse</p>
@@ -52,12 +66,16 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                                 <p className="text-sm font-medium text-gray-700">Optimal</p>
                             </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end">
                             <p className="text-xl md:text-2xl font-bold text-gray-800">42</p>
-                            <p className="text-xs text-gray-400">bpm</p>
+                            <div className="flex items-center space-x-1">
+                                <span className="text-gray-400 text-xs">bpm</span>
+                                {/* Heart Icon */}
+                                <i className="ph ph-heart text-gray-400 text-base"></i>
+                            </div>
                         </div>
                     </div>
-
+                    {/* Irregular Heartbeats */}
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-gray-500 text-sm">Irregular Heartbeats</p>
@@ -66,12 +84,16 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                                 <p className="text-sm font-medium text-gray-700">Good</p>
                             </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end">
                             <p className="text-xl md:text-2xl font-bold text-gray-800">0</p>
-                            <p className="text-xs text-gray-400">beats</p>
+                            <div className="flex items-center space-x-1">
+                                <span className="text-gray-400 text-xs">beats</span>
+                                {/* Beats Icon */}
+                                <i className="ph ph-waveform text-gray-400 text-base"></i>
+                            </div>
                         </div>
                     </div>
-
+                    {/* Breathing Rate */}
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-gray-500 text-sm">Breathing Rate</p>
@@ -80,9 +102,13 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                                 <p className="text-sm font-medium text-gray-700">Good</p>
                             </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end">
                             <p className="text-xl md:text-2xl font-bold text-gray-800">23</p>
-                            <p className="text-xs text-gray-400">brpm</p>
+                            <div className="flex items-center space-x-1">
+                                <span className="text-gray-400 text-xs">brpm</span>
+                                {/* Breathing Icon */}
+                                <i className="ph ph-wind text-gray-400 text-base"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
