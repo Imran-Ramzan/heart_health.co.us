@@ -28,7 +28,7 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                 {[...Array(5)].map((_, i) => (
                     <div
                         key={i}
-                        className={`h-2 rounded-full flex-1 mx-1 ${i < 4 ? 'bg-green-300' : 'bg-gray-200'}`}
+                        className={`h-2 rounded-full flex-1 mx-1 ${i < 2 ? 'bg-green-300' : 'bg-gray-200'}`}
                     ></div>
                 ))}
             </div>
@@ -45,10 +45,10 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                         {/* Blood Pressure */}
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-gray-500 text-sm">Blood Pressure</p>
+                                <p className="text-black font-bold text-sm">Blood Pressure</p>
                                 <div className="flex items-center space-x-1">
                                     <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-                                    <p className="text-sm font-medium text-gray-700">High Normal</p>
+                                    <p className="text-sm font-medium text-yellow-400">High Normal</p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -58,10 +58,10 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                         {/* Pulse */}
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-gray-500 text-sm">Pulse</p>
+                                <p className="text-black font-bold text-sm">Pulse</p>
                                 <div className="flex items-center space-x-1">
                                     <i className="ph-fill ph-check-circle text-green-500"></i>
-                                    <p className="text-sm font-medium text-gray-700">Optimal</p>
+                                    <p className="text-sm font-medium text-green-500">Optimal</p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -71,10 +71,10 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                         {/* Irregular Heartbeats */}
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-gray-500 text-sm">Irregular Heartbeats</p>
+                                <p className="text-black font-bold text-sm">Irregular Heartbeats</p>
                                 <div className="flex items-center space-x-1">
                                     <i className="ph-fill ph-check-circle text-green-500"></i>
-                                    <p className="text-sm font-medium text-gray-700">Good</p>
+                                    <p className="text-sm font-medium text-green-500">Good</p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -84,10 +84,10 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
                         {/* Breathing Rate */}
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-gray-500 text-sm">Breathing Rate</p>
+                                <p className="text-black font-bold text-sm">Breathing Rate</p>
                                 <div className="flex items-center space-x-1">
                                     <i className="ph-fill ph-check-circle text-green-500"></i>
-                                    <p className="text-sm font-medium text-gray-700">Good</p>
+                                    <p className="text-sm font-medium text-green-500">Good</p>
                                 </div>
                             </div>
                             <div className="text-right">
