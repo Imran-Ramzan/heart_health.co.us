@@ -25,9 +25,8 @@ function BellCurveChart() {
             {
                 label: '',
                 data: labels.map(bell),
-                fill: true,
-                backgroundColor: 'rgba(220, 252, 231, 0.8)', // soft green
-                borderColor: '#22c55e', // green
+                fill: false,
+                borderColor: '#727a75ff', // green
                 pointRadius: 0,
                 tension: 0.4,
             },
@@ -56,10 +55,33 @@ function BellCurveChart() {
     };
 
     return (
-        <div className="relative h-16 mb-4 flex justify-end">
-            <Line data={data} options={options} height={60} />
-            <div className="absolute right-0" style={{ top: '8px' }}>
-                <span className="text-xs text-green-600 bg-white px-2 py-1 rounded shadow-sm border font-medium">Optimal</span>
+        <div
+            className="
+                relative
+                mb-6
+                h-24
+                w-full
+                flex
+                justify-center
+                md:justify-end
+            "
+            style={{ maxWidth: '100%' }}
+        >
+            <div className="w-full md:w-80">
+                <Line data={data} options={options} height={96} />
+                <div
+                    className="absolute"
+                    style={{
+                        top: '12px',
+                        right: 0,
+                        // On mobile, move label to right edge of graph container
+                        transform: 'translateX(0%)'
+                    }}
+                >
+                    <span className="text-xs text-green-600 bg-white px-2 py-1 rounded shadow-sm border font-medium">
+                        Optimal
+                    </span>
+                </div>
             </div>
         </div>
     );
