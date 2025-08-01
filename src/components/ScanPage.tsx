@@ -128,9 +128,9 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     }, [currentRecording, onContinue]);
 
     return (
-        <div id="scan-page" className="flex flex-col h-full bg-white p-6 md:p-12">
+        <div id="scan-page" className="flex flex-col h-full bg-gradient-to-br from-[#e0f7fa] via-[#f8fafc] to-[#f0fff4] p-6 md:p-12">
             <div className="text-center pt-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-black">
+                <h1 className="text-2xl md:text-3xl font-bold text-black drop-shadow-sm">
                     {isRecording
                         ? `Recording (${currentRecording + 1}/${RECORDINGS_COUNT})`
                         : "Please hold still during this scan."}
@@ -144,7 +144,7 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                 )}
             </div>
             <div className="flex-grow flex items-center justify-center my-4">
-                <div className="w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden relative md:max-w-sm bg-black">
+                <div className="w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden relative md:max-w-sm bg-black shadow-2xl border-4 border-[#40E0D0]">
                     <video
                         ref={videoRef}
                         autoPlay
@@ -153,6 +153,10 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                         className="w-full h-full object-cover"
                         style={{ background: "#000" }}
                     />
+                    {/* Animated scan border */}
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                        <div className="w-[90%] h-[90%] rounded-2xl border-2 border-dashed border-[#40E0D0] animate-pulse"></div>
+                    </div>
                     {/* Optionally, overlay face box or feedback */}
                     {!faceDetected && (
                         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
@@ -161,6 +165,17 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                     )}
                 </div>
             </div>
+            {/* Progress bar for recording */}
+            {isRecording && (
+                <div className="w-full md:max-w-sm md:mx-auto mb-4">
+                    <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                        <div
+                            className="h-full bg-[#40E0D0] transition-all duration-500"
+                            style={{ width: `${(countdown / MAX_SECONDS) * 100}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
             {error && <div className="text-red-500 text-center mb-2">{error}</div>}
             <div className="mt-auto pb-4 md:max-w-sm md:mx-auto md:w-full">
                 {!isRecording && currentRecording < RECORDINGS_COUNT && (
