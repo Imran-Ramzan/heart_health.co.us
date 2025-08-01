@@ -130,13 +130,15 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     return (
         <div id="scan-page" className="flex flex-col h-full bg-gradient-to-br from-[#e0f7fa] via-[#f8fafc] to-[#f0fff4] p-6 md:p-12">
             <div className="text-center pt-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-red-600 drop-shadow-sm">
+                <h1 className="text-2xl md:text-3xl font-bold drop-shadow-sm">
+                    <span className={isRecording ? "text-[#40E0D0]" : "text-red-600"}>
                     {isRecording
                         ? `Recording (${currentRecording + 1}/${RECORDINGS_COUNT})`
                         : "Please hold still during this scan."}
+                    </span>    
                 </h1>
                 {isRecording && (
-                    <p className="text-lg text-[#40E0D0] mt-2">
+                    <p className="text-lg text-black mt-2">
                         {faceDetected
                             ? `Time left: ${countdown}s`
                             : "No face detected, recording stopped."}
