@@ -25,7 +25,7 @@ export default function ResultsPage({ onBack }: ResultsPageProps ) {
             </div>
             {/* Progress bar with 5 segments */}
             <div className="flex justify-between items-center mb-6 px-2 md:px-8">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(7)].map((_, i) => (
                     <div
                         key={i}
                         className={`h-2 rounded-full flex-1 mx-1 ${i < 2 ? 'bg-green-300' : 'bg-gray-200'}`}
