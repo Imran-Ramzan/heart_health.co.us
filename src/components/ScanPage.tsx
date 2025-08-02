@@ -134,6 +134,14 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         if (currentRecording >= RECORDINGS_COUNT) {
             // Dev note: log out all recorded video blobs
             console.log("Recorded video blobs:", videoBlobs);
+
+            // Log sample FormData for API usage
+            const formData = new FormData();
+            videoBlobs.forEach((blob, idx) => {
+                formData.append(`video${idx + 1}`, blob, `recording${idx + 1}.webm`);
+            });
+            console.log("Sample FormData (for API):", formData);
+
             onContinue();
         }
     }, [currentRecording, onContinue, videoBlobs]);
