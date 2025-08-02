@@ -96,7 +96,13 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         let chunks: BlobPart[] = [];
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
-            setCurrentRecording(prev => prev + 1);
+            setCurrentRecording(prev => {
+                // Immediately jump to next recording if not finished
+                if (prev + 1 < RECORDINGS_COUNT) {
+                    setTimeout(() => startRecording(), 500); // short delay before next
+                }
+                return prev + 1;
+            });
             setIsRecording(false);
         };
         mediaRecorderRef.current = recorder;
