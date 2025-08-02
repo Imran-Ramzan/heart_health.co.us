@@ -18,6 +18,7 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     const [faceDetected, setFaceDetected] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [videoBlobs, setVideoBlobs] = useState<Blob[]>([]);
 
     // Load face-api models
     useEffect(() => {
@@ -96,6 +97,8 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         let chunks: BlobPart[] = [];
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
+            const videoBlob = new Blob(chunks, { type: "video/webm" });
+            setVideoBlobs(prev => [...prev, videoBlob]);
             setCurrentRecording(prev => {
                 // Immediately jump to next recording if not finished
                 if (prev + 1 < RECORDINGS_COUNT) {
@@ -129,9 +132,11 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
 
     useEffect(() => {
         if (currentRecording >= RECORDINGS_COUNT) {
+            // Dev note: log out all recorded video blobs
+            console.log("Recorded video blobs:", videoBlobs);
             onContinue();
         }
-    }, [currentRecording, onContinue]);
+    }, [currentRecording, onContinue, videoBlobs]);
 
     return (
         <div id="scan-page" className="flex flex-col h-full bg-gradient-to-br from-[#e0f7fa] via-[#f8fafc] to-[#f0fff4] p-6 md:p-12">
