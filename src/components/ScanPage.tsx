@@ -19,6 +19,8 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [videoBlobs, setVideoBlobs] = useState<Blob[]>([]);
+    const [failedRecording, setFailedRecording] = useState<null | number>(null);
+    const [hasStartedFlow, setHasStartedFlow] = useState(false);
 
     // Load face-api models
     useEffect(() => {
@@ -84,12 +86,15 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
             }
         }
         if (isRecording && !faceDetected) {
+            setFailedRecording(currentRecording); // mark this recording as failed
             stopRecording();
         }
         return () => clearTimeout(timer);
-    }, [isRecording, countdown, faceDetected]);
+    }, [isRecording, countdown, faceDetected, currentRecording]);
 
     const startRecording = () => {
+        setFailedRecording(null); // reset failed state on new attempt
+        setHasStartedFlow(true); // mark that flow has started
         if (!stream || !videoRef.current) return;
         setCountdown(MAX_SECONDS);
         setIsRecording(true);
@@ -97,15 +102,18 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         let chunks: BlobPart[] = [];
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
-            const videoBlob = new Blob(chunks, { type: "video/webm" });
-            setVideoBlobs(prev => [...prev, videoBlob]);
-            setCurrentRecording(prev => {
-                // Immediately jump to next recording if not finished
-                if (prev + 1 < RECORDINGS_COUNT) {
-                    setTimeout(() => startRecording(), 500); // short delay before next
-                }
-                return prev + 1;
-            });
+            // Only save blob and advance if recording didn't fail
+            if (failedRecording === null) {
+                const videoBlob = new Blob(chunks, { type: "video/webm" });
+                setVideoBlobs(prev => {
+                    const updated = [...prev];
+                    updated[currentRecording] = videoBlob;
+                    return updated;
+                });
+                // Only advance to next recording if this one succeeded
+                setCurrentRecording(prev => prev + 1);
+            }
+            // If failed, stay on same currentRecording index for retry
             setIsRecording(false);
         };
         mediaRecorderRef.current = recorder;
@@ -130,8 +138,21 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         onContinue();
     };
 
+    // Auto-start next recording when current one succeeds
     useEffect(() => {
-        if (currentRecording >= RECORDINGS_COUNT) {
+        if (hasStartedFlow && !isRecording && failedRecording === null && currentRecording < RECORDINGS_COUNT && currentRecording > 0) {
+            // Brief delay before auto-starting next recording
+            const timer = setTimeout(() => {
+                startRecording();
+            }, 1500); // 1.5 second delay for better UX
+            
+            return () => clearTimeout(timer);
+        }
+    }, [currentRecording, isRecording, failedRecording, hasStartedFlow]);
+
+    useEffect(() => {
+        // Only proceed if all recordings are done successfully (no failed recordings)
+        if (currentRecording >= RECORDINGS_COUNT && failedRecording === null) {
             // Dev note: log out all recorded video blobs
             console.log("Recorded video blobs:", videoBlobs);
 
@@ -144,7 +165,7 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
 
             onContinue();
         }
-    }, [currentRecording, onContinue, videoBlobs]);
+    }, [currentRecording, onContinue, videoBlobs, failedRecording]);
 
     return (
         <div id="scan-page" className="flex flex-col h-full bg-gradient-to-br from-[#e0f7fa] via-[#f8fafc] to-[#f0fff4] p-6 md:p-12">
@@ -153,6 +174,8 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                     <span className={isRecording ? "text-[#40E0D0]" : "text-red-600"}>
                     {isRecording
                         ? `Recording (${currentRecording + 1}/${RECORDINGS_COUNT})`
+                        : hasStartedFlow && failedRecording === null && currentRecording < RECORDINGS_COUNT && currentRecording > 0
+                        ? `Recording ${currentRecording} completed! Starting ${currentRecording + 1}...`
                         : "Please hold still during this scan."}
                     </span>    
                 </h1>
@@ -198,14 +221,21 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                 </div>
             )}
             {error && <div className="text-red-500 text-center mb-2">{error}</div>}
+            {failedRecording !== null && (
+                <div className="text-red-600 text-center font-bold mb-2">
+                    Recording {failedRecording + 1} failed. Please try again.
+                </div>
+            )}
             <div className="mt-auto pb-4 md:max-w-sm md:mx-auto md:w-full">
-                {!isRecording && currentRecording < RECORDINGS_COUNT && (
+                {!isRecording && currentRecording < RECORDINGS_COUNT && (failedRecording !== null || !hasStartedFlow) && (
                     <button
                         onClick={handleStart}
                         className="w-full bg-[#40E0D0] text-white font-bold py-4 px-4 rounded-full shadow-lg hover:bg-[#34d3c3] transition-colors duration-300"
-                        disabled={loading || !stream || !faceDetected}
+                        disabled={loading || !stream}
                     >
-                        {loading || !stream ? "Loading..." : "Start Recording"}
+                        {failedRecording !== null
+                            ? `Retry Recording ${failedRecording + 1}`
+                            : `Start Recording`}
                     </button>
                 )}
                 <button
