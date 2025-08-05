@@ -15,27 +15,28 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     const [currentRecording, setCurrentRecording] = useState(0);
     const [countdown, setCountdown] = useState(MAX_SECONDS);
     const [isRecording, setIsRecording] = useState(false);
-    const [faceDetected, setFaceDetected] = useState(true);
+    const [faceDetected, setFaceDetected] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [videoBlobs, setVideoBlobs] = useState<Blob[]>([]);
-    const [failedRecording, setFailedRecording] = useState<null | number>(null);
+    const [recordingStatus, setRecordingStatus] = useState<"idle" | "recording" | "stopped" | "failed">("idle");
     const [hasStartedFlow, setHasStartedFlow] = useState(false);
+    const didFailRef = useRef(false);
 
-    // Load face-api models
+    // Load models
     useEffect(() => {
         const loadModels = async () => {
             setLoading(true);
             await Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-                faceapi.nets.faceExpressionNet.loadFromUri('/models')
+                faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
+                faceapi.nets.faceExpressionNet.loadFromUri("/models")
             ]);
             setLoading(false);
         };
         loadModels();
     }, []);
 
-    // Start camera and attach stream to video
+    // Start camera
     useEffect(() => {
         const getCamera = async () => {
             try {
@@ -46,24 +47,28 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
             }
         };
         getCamera();
+    }, []);
+
+    // Stop camera on unmount
+    useEffect(() => {
         return () => {
             stream?.getTracks().forEach(track => track.stop());
         };
-    }, []);
+    }, [stream]);
 
-    // Attach stream to video element after both are ready
+    // Attach stream
     useEffect(() => {
         if (videoRef.current && stream) {
             videoRef.current.srcObject = stream;
         }
     }, [stream]);
 
-    // Face detection loop (only when models loaded and video ready)
+    // Face detection
     useEffect(() => {
         let interval: number;
         if (videoRef.current && stream && !loading) {
             interval = window.setInterval(async () => {
-                if (videoRef.current && videoRef.current.readyState === 4) {
+                if (videoRef.current?.readyState === 4) {
                     const result = await faceapi.detectSingleFace(
                         videoRef.current,
                         new faceapi.TinyFaceDetectorOptions()
@@ -75,47 +80,60 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
         return () => clearInterval(interval);
     }, [loading, stream]);
 
-    // Countdown logic
+    // Countdown
     useEffect(() => {
         let timer: number;
-        if (isRecording && faceDetected) {
-            if (countdown > 0) {
-                timer = window.setTimeout(() => setCountdown(countdown - 1), 1000);
+        if (isRecording) {
+            if (!faceDetected) {
+                didFailRef.current = true;
+                stopRecording();
+            } else if (countdown > 0) {
+                timer = window.setTimeout(() => setCountdown(prev => prev - 1), 1000);
             } else {
                 stopRecording();
             }
         }
-        if (isRecording && !faceDetected) {
-            setFailedRecording(currentRecording); // mark this recording as failed
-            stopRecording();
-        }
         return () => clearTimeout(timer);
-    }, [isRecording, countdown, faceDetected, currentRecording]);
+    }, [isRecording, countdown, faceDetected]);
 
     const startRecording = () => {
-        setFailedRecording(null); // reset failed state on new attempt
-        setHasStartedFlow(true); // mark that flow has started
         if (!stream || !videoRef.current) return;
+        if (!faceDetected) {
+            setError("No face detected. Please align your face before starting.");
+            return;
+        }
+
         setCountdown(MAX_SECONDS);
         setIsRecording(true);
+        setRecordingStatus("recording");
+        setError(null);
+        setHasStartedFlow(true);
+        didFailRef.current = false;
+
         const recorder = new MediaRecorder(stream);
         let chunks: BlobPart[] = [];
+
         recorder.ondataavailable = e => chunks.push(e.data);
+
         recorder.onstop = () => {
-            // Only save blob and advance if recording didn't fail
-            if (failedRecording === null) {
-                const videoBlob = new Blob(chunks, { type: "video/webm" });
-                setVideoBlobs(prev => {
-                    const updated = [...prev];
-                    updated[currentRecording] = videoBlob;
-                    return updated;
-                });
-                // Only advance to next recording if this one succeeded
-                setCurrentRecording(prev => prev + 1);
-            }
-            // If failed, stay on same currentRecording index for retry
             setIsRecording(false);
+
+            if (didFailRef.current) {
+                setRecordingStatus("failed");
+                return;
+            }
+
+            const blob = new Blob(chunks, { type: "video/webm" });
+            setVideoBlobs(prev => {
+                const updated = [...prev];
+                updated[currentRecording] = blob;
+                return updated;
+            });
+
+            setRecordingStatus("stopped");
+            setCurrentRecording(prev => prev + 1);
         };
+
         mediaRecorderRef.current = recorder;
         recorder.start();
     };
@@ -128,56 +146,52 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
     };
 
     const handleStart = () => {
-        setError(null);
         startRecording();
     };
 
     const handleSkip = () => {
-        setError(null);
         setCurrentRecording(RECORDINGS_COUNT);
         onContinue();
     };
 
-    // Auto-start next recording when current one succeeds
+    // Auto-start next recording only after successful stop
     useEffect(() => {
-        if (hasStartedFlow && !isRecording && failedRecording === null && currentRecording < RECORDINGS_COUNT && currentRecording > 0) {
-            // Brief delay before auto-starting next recording
-            const timer = setTimeout(() => {
-                startRecording();
-            }, 1500); // 1.5 second delay for better UX
-            
-            return () => clearTimeout(timer);
+        if (
+            hasStartedFlow &&
+            recordingStatus === "stopped" &&
+            currentRecording < RECORDINGS_COUNT
+        ) {
+            const t = setTimeout(() => startRecording(), 1500);
+            return () => clearTimeout(t);
         }
-    }, [currentRecording, isRecording, failedRecording, hasStartedFlow]);
+    }, [recordingStatus, currentRecording, hasStartedFlow]);
 
+    // Finish flow
     useEffect(() => {
-        // Only proceed if all recordings are done successfully (no failed recordings)
-        if (currentRecording >= RECORDINGS_COUNT && failedRecording === null) {
-            // Dev note: log out all recorded video blobs
-            console.log("Recorded video blobs:", videoBlobs);
-
-            // Log sample FormData for API usage
+        if (currentRecording === RECORDINGS_COUNT) {
             const formData = new FormData();
             videoBlobs.forEach((blob, idx) => {
                 formData.append(`video${idx + 1}`, blob, `recording${idx + 1}.webm`);
             });
-            console.log("Sample FormData (for API):", formData);
-
+            console.log("Final video blobs:", videoBlobs);
+            console.log("FormData:", formData);
             onContinue();
         }
-    }, [currentRecording, onContinue, videoBlobs, failedRecording]);
+    }, [currentRecording, videoBlobs, onContinue]);
 
     return (
-        <div id="scan-page" className="flex flex-col h-full bg-gradient-to-br from-[#e0f7fa] via-[#f8fafc] to-[#f0fff4] p-6 md:p-12">
+        <div className="flex flex-col h-full p-6 md:p-12 bg-gradient-to-br from-[#e0f7fa] via-[#f8fafc] to-[#f0fff4]">
             <div className="text-center pt-8">
                 <h1 className="text-2xl md:text-3xl font-bold drop-shadow-sm">
                     <span className={isRecording ? "text-[#40E0D0]" : "text-red-600"}>
-                    {isRecording
-                        ? `Recording (${currentRecording + 1}/${RECORDINGS_COUNT})`
-                        : hasStartedFlow && failedRecording === null && currentRecording < RECORDINGS_COUNT && currentRecording > 0
-                        ? `Recording ${currentRecording} completed! Starting ${currentRecording + 1}...`
-                        : "Please hold still during this scan."}
-                    </span>    
+                        {isRecording
+                            ? `Recording (${currentRecording + 1}/${RECORDINGS_COUNT})`
+                            : recordingStatus === "failed"
+                            ? `Recording ${currentRecording + 1} failed. Try again.`
+                            : hasStartedFlow && currentRecording < RECORDINGS_COUNT
+                            ? `Recording ${currentRecording} done!`
+                            : "Please hold still during this scan."}
+                    </span>
                 </h1>
                 {isRecording && (
                     <p className="text-lg text-black mt-2">
@@ -187,6 +201,7 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                     </p>
                 )}
             </div>
+
             <div className="flex-grow flex items-center justify-center my-4">
                 <div className="w-full max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden relative md:max-w-sm bg-black shadow-2xl border-4 border-[#40E0D0]">
                     <video
@@ -197,11 +212,9 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                         className="w-full h-full object-cover"
                         style={{ background: "#000" }}
                     />
-                    {/* Animated scan border */}
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                         <div className="w-[90%] h-[90%] rounded-2xl border-2 border-dashed border-[#40E0D0] animate-pulse"></div>
                     </div>
-                    {/* Optionally, overlay face box or feedback */}
                     {!faceDetected && (
                         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
                             <span className="text-white font-bold text-lg">No face detected</span>
@@ -209,7 +222,7 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                     )}
                 </div>
             </div>
-            {/* Progress bar for recording */}
+
             {isRecording && (
                 <div className="w-full md:max-w-sm md:mx-auto mb-4">
                     <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
@@ -220,21 +233,24 @@ export default function ScanPage({ onContinue }: ScanPageProps) {
                     </div>
                 </div>
             )}
+
             {error && <div className="text-red-500 text-center mb-2">{error}</div>}
-            {failedRecording !== null && (
+
+            {recordingStatus === "failed" && (
                 <div className="text-red-600 text-center font-bold mb-2">
-                    Recording {failedRecording + 1} failed. Please try again.
+                    Recording {currentRecording + 1} failed. Please try again.
                 </div>
             )}
+
             <div className="mt-auto pb-4 md:max-w-sm md:mx-auto md:w-full">
-                {!isRecording && currentRecording < RECORDINGS_COUNT && (failedRecording !== null || !hasStartedFlow) && (
+                {!isRecording && currentRecording < RECORDINGS_COUNT && (
                     <button
                         onClick={handleStart}
                         className="w-full bg-[#40E0D0] text-white font-bold py-4 px-4 rounded-full shadow-lg hover:bg-[#34d3c3] transition-colors duration-300"
                         disabled={loading || !stream}
                     >
-                        {failedRecording !== null
-                            ? `Retry Recording ${failedRecording + 1}`
+                        {recordingStatus === "failed"
+                            ? `Retry Recording ${currentRecording + 1}`
                             : `Start Recording`}
                     </button>
                 )}
